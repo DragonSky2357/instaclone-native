@@ -1,12 +1,13 @@
 import AppLoading from "expo-app-loading";
 import React, { useState } from "react";
+import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Font from "expo-font";
 import { Asset } from "expo-asset";
 import LoggedOutNav from "./navigators/LoggedOutNav";
 import { NavigationContainer } from "@react-navigation/native";
 import { ApolloProvider, useReactiveVar } from "@apollo/client";
-import client, { isLoggedInVar, tokenVar } from "./apollo";
+import { isLoggedInVar, tokenVar, clientAndroid, clientWeb } from "./apollo";
 import LoggedInNav from "./navigators/LoggedInNav";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -42,7 +43,7 @@ export default function App() {
     );
   }
   return (
-    <ApolloProvider client={client}>
+    <ApolloProvider client={Platform.OS == "web" ? clientWeb : clientAndroid}>
       <NavigationContainer>
         {isLoggedIn ? <LoggedInNav /> : <LoggedOutNav />}
       </NavigationContainer>

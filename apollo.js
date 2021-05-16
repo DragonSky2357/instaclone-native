@@ -24,7 +24,11 @@ export const logUserOut = async () => {
   tokenVar(null);
 };
 
-const httpLink = createHttpLink({
+const httpLinkAndroid = createHttpLink({
+  uri: "http://10.0.2.2:4000/graphql",
+});
+
+const httpLinkWeb = createHttpLink({
   uri: "http://localhost:4000/graphql",
 });
 
@@ -37,9 +41,12 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const client = new ApolloClient({
-  link: authLink.concat(httpLink),
+export const clientAndroid = new ApolloClient({
+  link: authLink.concat(httpLinkAndroid),
   cache: new InMemoryCache(),
 });
 
-export default client;
+export const clientWeb = new ApolloClient({
+  link: authLink.concat(httpLinkWeb),
+  cache: new InMemoryCache(),
+});

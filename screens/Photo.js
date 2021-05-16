@@ -1,5 +1,6 @@
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { COMMENT_FRAGMENT, PHOTO_FRAGMENT } from "../fragments";
 
 export default function Photo({ navigation }) {
   return (

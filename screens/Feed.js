@@ -25,9 +25,9 @@ const FEED_QUERY = gql`
   ${COMMENT_FRAGMENT}
 `;
 
-export default function Feed({ navigation }) {
-  const { data, loading } = useQuery(FEED_QUERY);
-  console.log(loading, data);
+export default function Feed() {
+  const { data, loading, error } = useQuery(FEED_QUERY);
+  console.log(data, loading, error);
   const renderPhoto = ({ item: photo }) => {
     return (
       <View style={{ flex: 1 }}>
@@ -35,7 +35,6 @@ export default function Feed({ navigation }) {
       </View>
     );
   };
-
   return (
     <ScreenLayout loading={loading}>
       <FlatList
