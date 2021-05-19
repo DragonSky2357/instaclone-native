@@ -42,12 +42,22 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+export const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        seeFeed: offsetLimitPagination(),
+      },
+    },
+  },
+});
+
 export const clientAndroid = new ApolloClient({
   link: authLink.concat(httpLinkAndroid),
-  cache: new InMemoryCache(),
+  cache: cache,
 });
 
 export const clientWeb = new ApolloClient({
   link: authLink.concat(httpLinkWeb),
-  cache: new InMemoryCache(),
+  cache: cache,
 });
