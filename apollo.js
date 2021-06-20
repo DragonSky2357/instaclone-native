@@ -3,12 +3,17 @@ import {
   createHttpLink,
   InMemoryCache,
   makeVar,
+  split,
 } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
-import { offsetLimitPagination } from "@apollo/client/utilities";
+import {
+  getMainDefinition,
+  offsetLimitPagination,
+} from "@apollo/client/utilities";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createUploadLink } from "apollo-upload-client";
+import { WebSocketLink } from "@apollo/client/link/ws";
 
 export const isLoggedInVar = makeVar();
 export const tokenVar = makeVar("");
@@ -33,6 +38,24 @@ const uploadHttpLinkAndroid = createUploadLink({
 
 const uploadHttpLinkWeb = createUploadLink({
   uri: "http://localhost:4000/graphql",
+});
+
+const wsLinkWeb = new WebSocketLink({
+  uri: "http://localhost:4000/graphql",
+  options: {
+    connectionParams: () => ({
+      token: tokenVar(),
+    }),
+  },
+});
+
+const wsLinkAndroid = new WebSocketLink({
+  uri: "http://10.0.2.2:4000/graphql",
+  options: {
+    connectionParams: () => ({
+      token: tokenVar(),
+    }),
+  },
 });
 
 const authLink = setContext((_, { headers }) => {
@@ -62,12 +85,41 @@ export const cache = new InMemoryCache({
   },
 });
 
+const httpLinksWeb = authLink.concat(onErrorLink).concat(uploadHttpLinkWeb);
+const httpLinksAndroid = authLink
+  .concat(onErrorLink)
+  .concat(uploadHttpLinkAndroid);
+
+const splitLinkWeb = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
+  wsLinkWeb,
+  httpLinksWeb
+);
+
+const splitLinkAndroid = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === "OperationDefinition" &&
+      definition.operation === "subscription"
+    );
+  },
+  wsLinkAndroid,
+  httpLinksAndroid
+);
+
 export const clientAndroid = new ApolloClient({
-  link: authLink.concat(onErrorLink).concat(uploadHttpLinkAndroid),
+  link: splitLinkAndroid,
   cache: cache,
 });
 
 export const clientWeb = new ApolloClient({
-  link: authLink.concat(onErrorLink).concat(uploadHttpLinkWeb),
+  link: splitLinkWeb,
   cache: cache,
 });
